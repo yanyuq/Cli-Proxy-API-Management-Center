@@ -1,0 +1,26 @@
+name: Sync Fork Daily
+
+on:
+  schedule:
+    # 注意：GitHub Actions 使用的是 UTC 时间。
+    # 这里的 21:00 UTC 对应的是北京时间 (UTC+8) 的每天早上 05:00。
+    # 如果你需要其他时区，请自行加减换算。
+    - cron: '0 21 * * *'
+  
+  # 开启 workflow_dispatch，允许你在 Actions 页面手动点击按钮触发测试
+  workflow_dispatch: 
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # 必须显式授予写入权限，否则无法更新你的仓库
+
+    steps:
+      - name: Sync branch with upstream
+        # 使用 GitHub 官方 CLI 同步默认分支
+        # --force 参数表示强制覆盖：如果你的 fork 产生了分叉，它会丢弃你的本地修改，强制与上游保持绝对一致。
+        # 如果你想保留自己的修改并在冲突时报错，请删掉 --force。
+        run: gh repo sync ${{ github.repository }} --force
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
